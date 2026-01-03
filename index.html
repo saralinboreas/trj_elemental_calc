@@ -6,98 +6,109 @@
 
 <style>
 body{
-  background:#0b0b10;
+  min-height:100vh;
+  background:linear-gradient(180deg,#1b1b24,#050507);
   color:#eee;
   font-family:sans-serif;
-  padding:20px
+  padding:20px;
 }
 .box{
   background:#141420;
-  padding:20px;
-  border-radius:14px;
-  max-width:720px;
-  margin:auto
+  padding:24px;
+  border-radius:18px;
+  max-width:1000px;
+  margin:auto;
+  box-shadow:0 0 40px rgba(0,0,0,.6);
 }
-select{
+h2,h3{margin:12px 0}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+  gap:12px;
+}
+
+.el-btn{
   background:#1e1e2e;
-  color:#fff;
-  padding:8px;
-  margin:8px 0;
-  width:100%
+  border-radius:14px;
+  padding:10px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transition:.18s;
 }
-h2,h3{margin:10px 0}
+.el-btn img{width:22px;height:22px}
+
+.el-btn.selected{
+  background:#151522;
+  transform:translateY(2px) scale(.96);
+  filter:brightness(.85);
+  box-shadow:0 0 18px currentColor;
+}
+.el-btn.locked{
+  opacity:.25;
+  pointer-events:none;
+}
+
+select{
+  width:100%;
+  background:#0e0e15;
+  color:#eee;
+  border:1px solid #222;
+  padding:10px;
+  border-radius:10px;
+}
+
+ul{list-style:none;padding-left:0}
+li{display:flex;align-items:center;gap:6px;margin:4px 0}
+li img{width:18px;height:18px}
+
+.immune{color:#c38bff}
+.resist{color:#7fdc9f}
+.neutral{color:#aaa}
+.weak{color:#ff8a8a}
 .small{font-size:13px;color:#aaa}
-
-ul{margin:6px 0 12px 20px;padding:0}
-li{list-style:none;margin:4px 0;display:flex;align-items:center;gap:6px}
-
-.resist li{color:#7fdc9f}
-.weak li{color:#ff8a8a}
-.immune li{color:#c38bff}
-.neutral li{color:#cfcfcf}
-
-.icon{
-  width:20px;
-  height:20px;
-  image-rendering:pixelated
-}
 </style>
 </head>
 
 <body>
 <div class="box">
-  <h2>Calculadora Elemental</h2>
+<h2>Calculadora Elemental</h2>
 
-  <label>Elemento 1</label>
-  <select id="e1"></select>
+<h3> </h3>
+<div id="elements" class="grid"></div>
 
-  <label>Elemento 2</label>
-  <select id="e2"></select>
+<h3>Habilidade</h3>
+<select id="skill"></select>
+<p id="skillDesc" class="small"></p>
 
-  <div class="small" id="desc"></div>
+<h3>Resistências</h3><ul id="resist" class="resist"></ul>
+<h3>Neutros</h3><ul id="neutral" class="neutral"></ul>
+<h3>Fraquezas</h3><ul id="weak" class="weak"></ul>
+<h3>Imunidades</h3><ul id="immune" class="immune"></ul>
 
-  <h3>Imunidades (0x)</h3>
-  <ul id="immune" class="immune"></ul>
-
-  <h3>Resistências (&lt;1x)</h3>
-  <ul id="resist" class="resist"></ul>
-
-  <h3>Neutros (1x)</h3>
-  <ul id="neutral" class="neutral"></ul>
-
-  <h3>Fraquezas (&gt;1x)</h3>
-  <ul id="weak" class="weak"></ul>
 </div>
 
 <script>
-const elements=[
+/* ===================== ELEMENTOS ===================== */
+const ELEMENTS=[
 "Fire","Water","Terra","Energy","Light","Void","Chaos",
 "Genesis","Rupture","Discipline","Air","Penance",
 "Tempus","Degradation","Electruid","Espiralia"
 ];
 
-const DESC={
-Fire:"Elemento de chamas e destruição.",
-Water:"Elemento fluido e adaptável.",
-Terra:"Elemento sólido e defensivo.",
-Energy:"Elemento puro de energia.",
-Light:"Elemento da luz e ordem.",
-Void:"Elemento do vazio e entropia.",
-Chaos:"Elemento instável e imprevisível.",
-Genesis:"Elemento da criação.",
-Rupture:"Elemento da ruptura absoluta.",
-Discipline:"Elemento da ordem rígida.",
-Air:"Elemento do vento.",
-Penance:"Elemento do sacrifício.",
-Tempus:"Elemento do tempo, limita fraquezas.",
-Degradation:"Elemento da corrosão.",
-Electruid:"Elemento elétrico selvagem.",
-Espiralia:"Elemento caótico espiral."
+const FUSIONS={
+  Electruid:["Water","Energy"],
+  Discipline:["Genesis","Rupture"]
 };
 
-const iconPath=e=>`icons/${e.toLowerCase()}.png`;
+const icon=e=>`icons/${e.toLowerCase()}.png`;
 
-const M={ /* MATRIZ IGUAL À ANTERIOR */
+/* ===================== MATRIZ ===================== */
+
+const M = {
 Fire:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Water:2,Light:2,Void:2,Chaos:2,Electruid:1.5,Terra:0.5,Fire:0},
 Water:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Energy:2,Light:2,Void:2,Chaos:2,Electruid:1.5,Genesis:1.5,Fire:0.5,Rupture:0.5,Water:0},
 Terra:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Fire:2,Light:2,Void:2,Chaos:2,Rupture:1.5,Discipline:1.5,Electruid:0.75,Energy:0.5,Terra:0},
@@ -116,90 +127,174 @@ Electruid:{Degradation:8,Tempus:8,Penance:8,Espiralia:8,Light:4,Void:4,Chaos:4,T
 Espiralia:{Espiralia:2,Degradation:1,Tempus:1,Light:0.75,Chaos:0.75,Void:0.75,Discipline:0.5,Fire:0.5,Water:0.5,Terra:0.5,Genesis:0,Rupture:0,Electruid:0,Air:0}
 };
 
-function fill(id,empty=false){
-  const s=document.getElementById(id);
-  if(empty){
-    const o=document.createElement("option");
-    o.value="";
-    o.textContent="— Nenhum —";
-    s.appendChild(o);
-  }
-  elements.forEach(e=>{
-    const o=document.createElement("option");
-    o.value=e;
-    o.textContent=e;
-    s.appendChild(o);
-  });
+/* ===================== HABILIDADES ===================== */
+const SKILLS={
+"Nenhuma":{
+ desc:"Sem efeitos adicionais."
+},
+"Campo de Dissolução":{
+ desc:"Ataques de Energia têm seu multiplicador reduzido em um nível (fraqueza > neutro > resistência > imunidade).",
+ dissolveEnergy:true
+},
+"Marca da Desgraça":{
+ desc:"Fraqueza a Espiralia. Imune a Tempus e Energia.",
+ forceWeak:{Espiralia:8},
+ immune:["Tempus","Energy"]
+},
+"Fluxo Adaptativo":{
+ desc:"Dano maior que 2x reduz em 20%. Dano maior que 4x reduz 50%.",
+ adaptive:true
+},
+"Núcleo Estável":{
+ desc:"Limita fraquezas a somente 2x. Resistências reduzidas em 15%.",
+ capAll:2,
+ resistPenalty:0.15
+},
+"Vazio Absoluto":{
+ desc:"Imune a Luz e Caos, Remove o limite de fraquezas, permitindo até 8x de qualquer elemento.",
+ voidAbsolute:true,
+ unlock8x:true
+}
+};
+
+/* ===================== UI ===================== */
+const grid=document.getElementById("elements");
+const skillSel=document.getElementById("skill");
+const skillDesc=document.getElementById("skillDesc");
+const immune=document.getElementById("immune");
+const resist=document.getElementById("resist");
+const neutral=document.getElementById("neutral");
+const weak=document.getElementById("weak");
+
+let selected=[];
+let skill="Nenhuma";
+
+/* ===================== UTIL ===================== */
+function fmt(x){
+  return Number.isInteger(x)? `${x}x` : `${x.toFixed(2).replace(/\.00$/,"")}x`;
 }
 
-fill("e1");
-fill("e2",true);
+/* ===================== BOTÕES ===================== */
+ELEMENTS.forEach(el=>{
+  const b=document.createElement("div");
+  b.className="el-btn";
+  b.dataset.el=el;
+  const img=document.createElement("img");
+  img.src=icon(el);
+  b.append(img,el);
+  b.onclick=()=>toggle(el);
+  grid.appendChild(b);
+});
 
-function li(el,text){
+Object.keys(SKILLS).forEach(s=>{
+  const o=document.createElement("option");
+  o.value=s;
+  o.textContent=s;
+  skillSel.appendChild(o);
+});
+
+skillSel.onchange=()=>{
+  skill=skillSel.value;
+  skillDesc.textContent=SKILLS[skill].desc;
+  update();
+};
+
+/* ===================== LÓGICA ===================== */
+function isLocked(el){
+  for(const f in FUSIONS){
+    if(selected.includes(f)&&FUSIONS[f].includes(el)) return true;
+    if(selected.includes(el)&&FUSIONS[f].includes(f)) return true;
+  }
+  return false;
+}
+
+function toggle(el){
+  if(isLocked(el)) return;
+  if(selected.includes(el)) selected=selected.filter(e=>e!==el);
+  else if(selected.length<2) selected.push(el);
+  update();
+}
+
+function calc(atk){
+  let mult=1;
+  let imm=false;
+  const sk=SKILLS[skill];
+
+  // Base elemental
+  selected.forEach(d=>{
+    const m=M[d]?.[atk] ?? 1;
+    if(m===0) imm=true;
+    else mult*=m;
+  });
+
+  if(sk.immune?.includes(atk)) imm=true;
+  if(sk.forceWeak?.[atk]) mult=sk.forceWeak[atk];
+
+  // Campo de Dissolução (Energia por níveis)
+  if(sk.dissolveEnergy && atk==="Energy" && !imm){
+    if(mult > 1){
+      mult /= 2;
+    }else if(mult === 1){
+      mult = 0.5;
+    }else if(mult <= 0.25){
+      imm = true;
+    }else{
+      mult /= 2;
+    }
+  }
+
+  // Vazio Absoluto
+  if(sk.voidAbsolute && (atk==="Light"||atk==="Chaos")){
+    imm=true;
+    mult=2;
+  }
+
+  if(sk.adaptive){
+    if(mult>4) mult*=0.5;
+    else if(mult>2) mult*=0.8;
+  }
+
+  if(sk.resistPenalty && mult<1)
+    mult+=sk.resistPenalty;
+
+  if(sk.capAll) mult=Math.min(mult,sk.capAll);
+
+  if(selected.includes("Tempus") && mult>1 && atk!=="Espiralia")
+    mult=1;
+
+  const cap = sk.unlock8x ? 8 : (atk==="Espiralia"?8:4);
+  mult=Math.min(mult,cap);
+
+  return imm?0:mult;
+}
+
+function li(el,t){
   const l=document.createElement("li");
   const i=document.createElement("img");
-  i.src=iconPath(el);
-  i.className="icon";
-  l.appendChild(i);
-  l.append(text);
+  i.src=icon(el);
+  l.append(i,t);
   return l;
 }
 
-function getMult(def,atk){
-  return M[def]?.[atk] ?? 1;
-}
+function update(){
+  document.querySelectorAll(".el-btn").forEach(b=>{
+    const el=b.dataset.el;
+    b.classList.toggle("selected",selected.includes(el));
+    b.classList.toggle("locked",isLocked(el));
+  });
 
-function calc(){
-  const defs=[e1.value,e2.value].filter(Boolean);
   immune.innerHTML=resist.innerHTML=weak.innerHTML=neutral.innerHTML="";
 
-  for(const atk of elements){
-    let mult=1;
-    let immuneHit=false;
-
-    for(const def of defs){
-      if(def===atk || getMult(def,atk)===0){
-        immuneHit=true;
-        break;
-      }
-    }
-
-    if(immuneHit){
-      immune.appendChild(li(atk,atk));
-      continue;
-    }
-
-    for(const def of defs){
-      mult*=getMult(def,atk);
-    }
-    
-// Limite de TEMPUS (EXCETO ESPIRALIA)
-
-if(defs.includes("Tempus") &&
-
-mult>1 && atk!=="Espiralia"){
-
-mult=1;
-}
-
-// Regras
-
-if(atk==="Espiralia"){
-if(mult>8) mult=8;
-}else{
-if(mult>4) mult=4;
-}
-
-    if(mult<1) resist.appendChild(li(atk,`${atk} (${mult}x)`));
-    else if(mult>1) weak.appendChild(li(atk,`${atk} (${mult}x)`));
+  ELEMENTS.forEach(atk=>{
+    const m=calc(atk);
+    if(m===0) immune.appendChild(li(atk,atk));
+    else if(m<1) resist.appendChild(li(atk,`${atk} (${fmt(m)})`));
+    else if(m>1) weak.appendChild(li(atk,`${atk} (${fmt(m)})`));
     else neutral.appendChild(li(atk,`${atk} (1x)`));
-  }
-
-  desc.textContent=defs.map(d=>DESC[d]).join(" + ");
+  });
 }
 
-e1.onchange=e2.onchange=calc;
-calc();
+update();
 </script>
 </body>
 </html>
