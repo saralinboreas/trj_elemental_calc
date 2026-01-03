@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Calculadora Elemental</title>
+
+<style>
+body{
+  background:#0b0b10;
+  color:#eee;
+  font-family:sans-serif;
+  padding:20px
+}
+.box{
+  background:#141420;
+  padding:20px;
+  border-radius:14px;
+  max-width:720px;
+  margin:auto
+}
+select{
+  background:#1e1e2e;
+  color:#fff;
+  padding:8px;
+  margin:8px 0;
+  width:100%
+}
+h2,h3{margin:10px 0}
+.result{font-size:18px;margin:10px 0}
+.small{font-size:13px;color:#aaa}
+
+ul{margin:6px 0 12px 20px;padding:0}
+li{list-style:none;margin:4px 0;display:flex;align-items:center;gap:6px}
+
+.resist li{color:#7fdc9f}
+.weak li{color:#ff8a8a}
+.immune li{color:#c38bff}
+
+.icon{
+  width:20px;
+  height:20px;
+  image-rendering:pixelated
+}
+</style>
+</head>
+
+<body>
+<div class="box">
+  <h2>Calculadora Elemental</h2>
+
+  <label>Elemento 1</label>
+  <select id="e1"></select>
+
+  <label>Elemento 2</label>
+  <select id="e2"></select>
+
+  <div class="result" id="out">Combinação Defensiva</div>
+  <div class="small" id="desc"></div>
+
+  <h3>Imunidades (0x)</h3>
+  <ul id="immune" class="immune"></ul>
+
+  <h3>Resistências</h3>
+  <ul id="resist" class="resist"></ul>
+
+  <h3>Fraquezas</h3>
+  <ul id="weak" class="weak"></ul>
+</div>
+
+<script>
+const elements=[
+"Fire","Water","Terra","Energy","Light","Void","Chaos",
+"Genesis","Rupture","Discipline","Air","Penance",
+"Tempus","Degradation","Electruid","Espiralia"
+];
+
+const DESC={
+Fire:"Elemento de chamas e destruição.",
+Water:"Elemento fluido e adaptável.",
+Terra:"Elemento sólido e defensivo.",
+Energy:"Elemento puro de energia.",
+Light:"Elemento da luz e ordem.",
+Void:"Elemento do vazio e entropia.",
+Chaos:"Elemento instável e imprevisível.",
+Genesis:"Elemento da criação.",
+Rupture:"Elemento da ruptura absoluta.",
+Discipline:"Elemento da ordem rígida.",
+Air:"Elemento do vento.",
+Penance:"Elemento do sacrifício.",
+Tempus:"Elemento do tempo, limita fraquezas.",
+Degradation:"Elemento da corrosão.",
+Electruid:"Elemento elétrico selvagem.",
+Espiralia:"Elemento caótico espiral."
+};
+
+const iconPath=e=>`icons/${e.toLowerCase()}.png`;
+
+const M={
+Fire:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Water:2,Light:2,Void:2,Chaos:2,Electruid:1.5,Terra:0.5,Fire:0},
+Water:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Energy:2,Light:2,Void:2,Chaos:2,Electruid:1.5,Genesis:1.5,Fire:0.5,Rupture:0.5,Water:0},
+Terra:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Fire:2,Light:2,Void:2,Chaos:2,Rupture:1.5,Discipline:1.5,Electruid:0.75,Energy:0.5,Terra:0},
+Energy:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Terra:2,Light:2,Void:2,Chaos:2,Rupture:1.5,Water:0.5,Genesis:0.5,Electruid:0.25,Energy:0},
+Light:{Degradation:4,Penance:4,Espiralia:4,Void:2,Chaos:2,Tempus:2,Energy:0.75,Fire:0.75,Genesis:0.75,Rupture:0.75,Terra:0.75,Water:0.75,Electruid:0.5,Light:0},
+Void:{Degradation:4,Penance:4,Espiralia:4,Light:2,Chaos:2,Tempus:2,Energy:0.75,Fire:0.75,Genesis:0.75,Rupture:0.75,Terra:0.75,Water:0.75,Electruid:0.5,Void:0},
+Chaos:{Degradation:4,Penance:4,Espiralia:4,Void:2,Light:2,Tempus:2,Genesis:2,Rupture:2,Discipline:2,Energy:0.75,Fire:0.75,Terra:0.75,Water:0.75,Electruid:0.5,Chaos:0},
+Genesis:{Degradation:4,Penance:4,Espiralia:4,Discipline:4,Light:2,Void:2,Chaos:2,Tempus:2,Rupture:2,Energy:1.5,Water:0.75,Genesis:0},
+Rupture:{Degradation:4,Penance:4,Espiralia:4,Discipline:4,Light:2,Void:2,Chaos:2,Tempus:2,Genesis:2,Energy:1.5,Electruid:0.75,Rupture:0},
+Discipline:{Degradation:2.5,Penance:2.5,Tempus:2.5,Espiralia:2.5,Air:2.5,Light:1.5,Chaos:1.5,Void:1.5,Genesis:0,Rupture:0},
+Air:{Espiralia:8,Degradation:4,Light:2,Chaos:2,Void:2,Penance:2,Tempus:2,Electruid:0.25,Genesis:0.25,Rupture:0.25,Air:0},
+Penance:{Espiralia:8,Degradation:4,Light:0.75,Chaos:0.75,Void:0.75,Discipline:0.5,Fire:0.5,Water:0.5,Terra:0.5,Energy:0.5,Penance:0,Genesis:0,Rupture:0,Electruid:0},
+Tempus:{Tempus:0},
+Degradation:{Espiralia:2,Tempus:1,Light:0.75,Chaos:0.75,Void:0.75,Discipline:0.5,Fire:0.5,Water:0.5,Terra:0.5,Genesis:0,Rupture:0,Electruid:0,Air:0,Penance:0},
+Electruid:{Degradation:8,Tempus:8,Penance:8,Espiralia:8,Light:4,Void:4,Chaos:4,Terra:2,Genesis:0.75,Rupture:0.75,Fire:0.5,Energy:0,Water:0,Electruid:0},
+Espiralia:{Espiralia:2,Degradation:1,Tempus:1,Light:0.75,Chaos:0.75,Void:0.75,Discipline:0.5,Fire:0.5,Water:0.5,Terra:0.5,Genesis:0,Rupture:0,Electruid:0,Air:0}
+};
+
+function fill(id,empty=false){
+  const s=document.getElementById(id);
+  if(empty){
+    const o=document.createElement("option");
+    o.value="";
+    o.textContent="— Nenhum —";
+    s.appendChild(o);
+  }
+  elements.forEach(e=>{
+    const o=document.createElement("option");
+    o.value=e;
+    o.textContent=e;
+    s.appendChild(o);
+  });
+}
+
+fill("e1");
+fill("e2",true);
+
+function li(el,text){
+  const l=document.createElement("li");
+  const i=document.createElement("img");
+  i.src=iconPath(el);
+  i.className="icon";
+  l.appendChild(i);
+  l.append(text);
+  return l;
+}
+
+function getMult(def,atk){
+  return M[def]?.[atk] ?? 1;
+}
+
+function calc(){
+  const defs=[e1.value,e2.value].filter(Boolean);
+  immune.innerHTML=resist.innerHTML=weak.innerHTML="";
+
+  for(const atk of elements){
+    let mult=1;
+    let immuneHit=false;
+
+    for(const def of defs){
+      if(def===atk || getMult(def,atk)===0){
+        immuneHit=true;
+        break;
+      }
+    }
+
+    if(immuneHit){
+      immune.appendChild(li(atk,atk));
+      continue;
+    }
+
+    for(const def of defs){
+      mult*=getMult(def,atk);
+    }
+
+    if(defs.includes("Tempus") && mult>1){
+      mult=1;
+    }
+
+    if(mult<1) resist.appendChild(li(atk,`${atk} (${mult}x)`));
+    else if(mult>1) weak.appendChild(li(atk,`${atk} (${mult}x)`));
+  }
+
+  desc.textContent=defs.map(d=>DESC[d]).join(" + ");
+}
+
+e1.onchange=e2.onchange=calc;
+calc();
+</script>
+</body>
+</html>
