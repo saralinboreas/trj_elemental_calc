@@ -174,7 +174,11 @@ function calc(){
     if(defs.includes("Tempus") && mult>1){
       mult=1;
     }
+// LIMITE GLOBAL 4x
 
+if(mult>4){
+mult=4;
+}
     if(mult<1) resist.appendChild(li(atk,`${atk} (${mult}x)`));
     else if(mult>1) weak.appendChild(li(atk,`${atk} (${mult}x)`));
   }
