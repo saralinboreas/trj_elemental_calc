@@ -26,7 +26,6 @@ select{
   width:100%
 }
 h2,h3{margin:10px 0}
-.result{font-size:18px;margin:10px 0}
 .small{font-size:13px;color:#aaa}
 
 ul{margin:6px 0 12px 20px;padding:0}
@@ -35,6 +34,7 @@ li{list-style:none;margin:4px 0;display:flex;align-items:center;gap:6px}
 .resist li{color:#7fdc9f}
 .weak li{color:#ff8a8a}
 .immune li{color:#c38bff}
+.neutral li{color:#cfcfcf}
 
 .icon{
   width:20px;
@@ -54,21 +54,19 @@ li{list-style:none;margin:4px 0;display:flex;align-items:center;gap:6px}
   <label>Elemento 2</label>
   <select id="e2"></select>
 
-  <div class="result" id="out">Combinação Defensiva</div>
   <div class="small" id="desc"></div>
 
-    <h3>Resistências</h3>
+  <h3>Imunidades (0x)</h3>
+  <ul id="immune" class="immune"></ul>
+
+  <h3>Resistências (&lt;1x)</h3>
   <ul id="resist" class="resist"></ul>
-  
+
   <h3>Neutros (1x)</h3>
   <ul id="neutral" class="neutral"></ul>
-  
-  <h3>Fraquezas</h3>
-  <ul id="weak" class="weak"></ul>
 
-    <h3>Imunidades (0x)</h3>
-  <ul id="immune" class="immune"></ul>
-  
+  <h3>Fraquezas (&gt;1x)</h3>
+  <ul id="weak" class="weak"></ul>
 </div>
 
 <script>
@@ -99,7 +97,7 @@ Espiralia:"Elemento caótico espiral."
 
 const iconPath=e=>`icons/${e.toLowerCase()}.png`;
 
-const M={
+const M={ /* MATRIZ IGUAL À ANTERIOR */
 Fire:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Water:2,Light:2,Void:2,Chaos:2,Electruid:1.5,Terra:0.5,Fire:0},
 Water:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Energy:2,Light:2,Void:2,Chaos:2,Electruid:1.5,Genesis:1.5,Fire:0.5,Rupture:0.5,Water:0},
 Terra:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Fire:2,Light:2,Void:2,Chaos:2,Rupture:1.5,Discipline:1.5,Electruid:0.75,Energy:0.5,Terra:0},
@@ -153,7 +151,7 @@ function getMult(def,atk){
 
 function calc(){
   const defs=[e1.value,e2.value].filter(Boolean);
-  immune.innerHTML=resist.innerHTML=weak.innerHTML="";
+  immune.innerHTML=resist.innerHTML=weak.innerHTML=neutral.innerHTML="";
 
   for(const atk of elements){
     let mult=1;
@@ -175,16 +173,12 @@ function calc(){
       mult*=getMult(def,atk);
     }
 
-    if(defs.includes("Tempus") && mult>1){
-      mult=1;
-    }
-// LIMITE GLOBAL 4x
+    if(defs.includes("Tempus") && mult>1) mult=1;
+    if(mult>4) mult=4;
 
-if(mult>4){
-mult=4;
-}
     if(mult<1) resist.appendChild(li(atk,`${atk} (${mult}x)`));
     else if(mult>1) weak.appendChild(li(atk,`${atk} (${mult}x)`));
+    else neutral.appendChild(li(atk,`${atk} (1x)`));
   }
 
   desc.textContent=defs.map(d=>DESC[d]).join(" + ");
