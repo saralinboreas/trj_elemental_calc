@@ -172,9 +172,23 @@ function calc(){
     for(const def of defs){
       mult*=getMult(def,atk);
     }
+    
+// Limite de TEMPUS (EXCETO ESPIRALIA)
 
-    if(defs.includes("Tempus") && mult>1) mult=1;
-    if(mult>4) mult=4;
+if(defs.includes("Tempus") &&
+
+mult>1 && atk!=="Espiralia"){
+
+mult=1;
+}
+
+// Regras
+
+if(atk==="Espiralia"){
+if(mult>8) mult=8;
+}else{
+if(mult>4) mult=4;
+}
 
     if(mult<1) resist.appendChild(li(atk,`${atk} (${mult}x)`));
     else if(mult>1) weak.appendChild(li(atk,`${atk} (${mult}x)`));
