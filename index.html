@@ -22,32 +22,31 @@
 <meta name="twitter:image" content="https://cdn.discordapp.com/icons/1304557655825711169/a_13d15f274c0c20a4f0f4eddcecd04f9f.gif?size=2048">
 
 <!-- ================= FIM EMBED ================= -->
-  
+
 <style>
-body{
+body {
   min-height:100vh;
   background:linear-gradient(180deg,#1b1b24,#050507);
   color:#eee;
   font-family:sans-serif;
   padding:20px;
 }
-.box{
+.box {
   background:#141420;
   padding:24px;
   border-radius:18px;
-  max-width:1000px;
+  max-width:1100px;
   margin:auto;
   box-shadow:0 0 40px rgba(0,0,0,.6);
 }
-h2,h3{margin:12px 0}
-
-.grid{
+h2,h3{text-align:center;margin:12px 0;}
+.grid {
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
   gap:12px;
+  justify-items:center;
 }
-
-.el-btn{
+.el-btn {
   background:#1e1e2e;
   border-radius:14px;
   padding:10px;
@@ -55,16 +54,17 @@ h2,h3{margin:12px 0}
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:8px;
-  transition:.18s;
+  gap:6px;
+  transition:.2s;
+  width:100%;
+  box-sizing:border-box;
+  border:2px solid transparent;
 }
 .el-btn img{width:22px;height:22px}
-
 .el-btn.selected{
   background:#151522;
-  transform:translateY(2px) scale(.96);
-  filter:brightness(.85);
-  box-shadow:0 0 18px currentColor;
+  border:2px solid #ff8a8a;
+  transform:translateY(1px) scale(.98);
 }
 .el-btn.locked{
   opacity:.25;
@@ -78,122 +78,162 @@ select{
   border:1px solid #222;
   padding:10px;
   border-radius:10px;
+  margin-bottom:12px;
 }
 
-ul{list-style:none;padding-left:0}
-li{display:flex;align-items:center;gap:6px;margin:4px 0}
-li img{width:18px;height:18px}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+  table-layout:fixed;
+}
+th,td{
+  padding:8px;
+  text-align:center;
+  border:1px solid #222;
+  border-radius:6px;
+  font-weight:bold;
+}
+th{background:#222;}
+td img{
+  width:20px;
+  height:20px;
+  vertical-align:middle;
+  margin-right:4px;
+}
 
-.immune{color:#c38bff}
-.resist{color:#7fdc9f}
-.neutral{color:#aaa}
-.weak{color:#ff8a8a}
-.small{font-size:13px;color:#aaa}
+/* Cores pastel definidas */
+.weak{background:#fca5a5;color:#000;}      /* vermelho claro */
+.resist{background:#86efac;color:#000;}    /* verde pastel */
+.neutral{background:#d4d4d8;color:#000;}   /* cinza */
+.immune{background:#c084fc;color:#000;}    /* roxo pastel */
+
+.small{font-size:13px;color:#aaa;}
+label.small{display:block;margin-top:12px;font-size:14px;}
 </style>
 </head>
-
 <body>
 <div class="box">
 <h2>Calculadora Elemental</h2>
-
-<h3> </h3>
+<h3>Selecione os Elementos</h3>
 <div id="elements" class="grid"></div>
 
-<h3>Habilidade</h3>
-<select id="skill"></select>
+<h3>Habilidades</h3>
+<select id="skill" multiple size="5"></select>
 <p id="skillDesc" class="small"></p>
 
-<h3>Fraquezas</h3><ul id="weak" class="weak"></ul>
-<h3>Resistências</h3><ul id="resist" class="resist"></ul>
-<h3>Neutros</h3><ul id="neutral" class="neutral"></ul>
-<h3>Imunidades</h3><ul id="immune" class="immune"></ul>
+<label class="small">
+  <input type="checkbox" id="tripleMode">
+  Modo Experimental (até 3 elementos)
+</label>
 
+<h3>Resultado</h3>
+<table>
+<thead>
+<tr><th>Elemento</th><th>Multiplicador</th></tr>
+</thead>
+<tbody id="resultTable"></tbody>
+</table>
 </div>
 
 <script>
-/* ===================== ELEMENTOS ===================== */
+/* ================= DADOS ================= */
 const ELEMENTS=[
-"Fire","Water","Terra","Energy","Light","Void","Chaos",
-"Genesis","Rupture","Discipline","Air","Penance",
-"Tempus","Degradation","Electruid","Espiralia"
+"Fogo","Agua","Terra","Energia","Luz","Vazio","Caos",
+"Genesis","Ruptura","Disciplina","Ar","Penitencia",
+"Tempus","Degradacao","Electruid","Espiralia"
 ];
 
 const FUSIONS={
-  Electruid:["Water","Energy"],
-  Discipline:["Genesis","Rupture"]
+  Electruid:["Agua","Energia"],
+  Disciplina:["Genesis","Ruptura"]
 };
 
 const icon=e=>`icons/${e.toLowerCase()}.png`;
 
-/* ===================== MATRIZ ===================== */
-
 const M = {
-Fire:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Water:2,Light:2,Void:2,Chaos:2,Electruid:1.5,Terra:0.5,Fire:0},
-Water:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Energy:2,Light:2,Void:2,Chaos:2,Electruid:1.5,Genesis:1.5,Fire:0.5,Rupture:0.5,Water:0},
-Terra:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Fire:2,Light:2,Void:2,Chaos:2,Rupture:1.5,Discipline:1.5,Electruid:0.75,Energy:0.5,Terra:0},
-Energy:{Degradation:4,Tempus:4,Penance:4,Espiralia:4,Terra:2,Light:2,Void:2,Chaos:2,Rupture:1.5,Water:0.5,Genesis:0.5,Electruid:0.25,Energy:0},
-Light:{Degradation:4,Penance:4,Espiralia:4,Void:2,Chaos:2,Tempus:2,Energy:0.75,Fire:0.75,Genesis:0.75,Rupture:0.75,Terra:0.75,Water:0.75,Electruid:0.5,Light:0},
-Void:{Degradation:4,Penance:4,Espiralia:4,Light:2,Chaos:2,Tempus:2,Energy:0.75,Fire:0.75,Genesis:0.75,Rupture:0.75,Terra:0.75,Water:0.75,Electruid:0.5,Void:0},
-Chaos:{Degradation:4,Penance:4,Espiralia:4,Void:2,Light:2,Tempus:2,Genesis:2,Rupture:2,Discipline:2,Energy:0.75,Fire:0.75,Terra:0.75,Water:0.75,Electruid:0.5,Chaos:0},
-Genesis:{Degradation:4,Penance:4,Espiralia:4,Discipline:4,Light:2,Void:2,Chaos:2,Tempus:2,Rupture:2,Energy:1.5,Water:0.75,Genesis:0},
-Rupture:{Degradation:4,Penance:4,Espiralia:4,Discipline:4,Light:2,Void:2,Chaos:2,Tempus:2,Genesis:2,Energy:1.5,Electruid:0.75,Rupture:0},
-Discipline:{Degradation:2.5,Penance:2.5,Tempus:2.5,Espiralia:2.5,Air:2.5,Light:1.5,Chaos:1.5,Void:1.5,Genesis:0,Rupture:0},
-Air:{Espiralia:8,Degradation:4,Light:2,Chaos:2,Void:2,Penance:2,Tempus:2,Electruid:0.25,Genesis:0.25,Rupture:0.25,Air:0},
-Penance:{Espiralia:8,Degradation:4,Light:0.75,Chaos:0.75,Void:0.75,Discipline:0.5,Fire:0.5,Water:0.5,Terra:0.5,Energy:0.5,Penance:0,Genesis:0,Rupture:0,Electruid:0},
+Fogo:{Degradacao:4,Tempus:4,Penitencia:4,Espiralia:4,Agua:2,Luz:2,Vazio:2,Caos:2,Electruid:1.5,Terra:0.5,Fogo:0},
+Agua:{Degradacao:4,Tempus:4,Penitencia:4,Espiralia:4,Energia:2,Luz:2,Vazio:2,Caos:2,Electruid:1.5,Genesis:1.5,Fogo:0.5,Ruptura:0.5,Agua:0},
+Terra:{Degradacao:4,Tempus:4,Penitencia:4,Espiralia:4,Fogo:2,Luz:2,Vazio:2,Caos:2,Ruptura:1.5,Disciplina:1.5,Electruid:0.75,Energia:0.5,Terra:0},
+Energia:{Degradacao:4,Tempus:4,Penitencia:4,Espiralia:4,Terra:2,Luz:2,Vazio:2,Caos:2,Ruptura:1.5,Agua:0.5,Genesis:0.5,Electruid:0.25,Energia:0},
+Luz:{Degradacao:4,Penitencia:4,Espiralia:4,Vazio:2,Caos:2,Tempus:2,Energia:0.75,Fogo:0.75,Genesis:0.75,Ruptura:0.75,Terra:0.75,Agua:0.75,Electruid:0.5,Luz:0},
+Vazio:{Degradacao:4,Penitencia:4,Espiralia:4,Luz:2,Caos:2,Tempus:2,Energia:0.75,Fogo:0.75,Genesis:0.75,Ruptura:0.75,Terra:0.75,Agua:0.75,Electruid:0.5,Vazio:0},
+Caos:{Degradacao:4,Penitencia:4,Espiralia:4,Vazio:2,Luz:2,Tempus:2,Genesis:2,Ruptura:2,Disciplina:2,Energia:0.75,Fogo:0.75,Terra:0.75,Agua:0.75,Electruid:0.5,Caos:0},
+Genesis:{Degradacao:4,Penitencia:4,Espiralia:4,Disciplina:4,Luz:2,Vazio:2,Caos:2,Tempus:2,Ruptura:2,Energia:1.5,Agua:0.75,Genesis:0},
+Ruptura:{Degradacao:4,Penitencia:4,Espiralia:4,Disciplina:4,Luz:2,Vazio:2,Caos:2,Tempus:2,Genesis:2,Energia:1.5,Electruid:0.75,Ruptura:0},
+Disciplina:{Degradacao:2.5,Penitencia:2.5,Tempus:2.5,Espiralia:2.5,Ar:2.5,Luz:1.5,Caos:1.5,Vazio:1.5,Genesis:0,Ruptura:0},
+Ar:{Espiralia:8,Degradacao:4,Luz:2,Caos:2,Vazio:2,Penitencia:2,Tempus:2,Electruid:0.25,Genesis:0.25,Ruptura:0.25,Ar:0},
+Penitencia:{Espiralia:8,Degradacao:4,Luz:0.75,Caos:0.75,Vazio:0.75,Disciplina:0.5,Fogo:0.5,Agua:0.5,Terra:0.5,Energia:0.5,Penitencia:0,Genesis:0,Ruptura:0,Electruid:0},
 Tempus:{Tempus:0},
-Degradation:{Espiralia:2,Tempus:1,Light:0.75,Chaos:0.75,Void:0.75,Discipline:0.5,Fire:0.5,Water:0.5,Terra:0.5,Genesis:0,Rupture:0,Electruid:0,Air:0,Penance:0},
-Electruid:{Degradation:8,Tempus:8,Penance:8,Espiralia:8,Light:4,Void:4,Chaos:4,Terra:2,Genesis:0.75,Rupture:0.75,Fire:0.5,Energy:0,Water:0,Electruid:0},
-Espiralia:{Espiralia:2,Degradation:1,Tempus:1,Light:0.75,Chaos:0.75,Void:0.75,Discipline:0.5,Fire:0.5,Water:0.5,Terra:0.5,Genesis:0,Rupture:0,Electruid:0,Air:0}
+Degradacao:{Espiralia:2,Tempus:1,Luz:0.75,Caos:0.75,Vazio:0.75,Disciplina:0.5,Fogo:0.5,Agua:0.5,Terra:0.5,Genesis:0,Ruptura:0,Electruid:0,Ar:0,Penitencia:0},
+Electruid:{Degradacao:8,Tempus:8,Penitencia:8,Espiralia:8,Luz:4,Vazio:4,Caos:4,Terra:2,Genesis:0.75,Ruptura:0.75,Fogo:0.5,Energia:0,Agua:0,Electruid:0},
+Espiralia:{Espiralia:2,Degradacao:1,Tempus:1,Luz:0.75,Caos:0.75,Vazio:0.75,Disciplina:0.5,Fogo:0.5,Agua:0.5,Terra:0.5,Genesis:0,Ruptura:0,Electruid:0,Ar:0}
 };
 
-/* ===================== HABILIDADES ===================== */
 const SKILLS={
-"Nenhuma":{
- desc:"Sem efeitos adicionais."
-},
-"Campo de Dissolução":{
- desc:"Ataques de Energia têm seu multiplicador reduzido em um nível (fraqueza > neutro > resistência > imunidade).",
- dissolveEnergy:true
-},
-"Marca da Desgraça":{
- desc:"Fraqueza a Espiralia. Imune a Tempus e Energia.",
- forceWeak:{Espiralia:8},
- immune:["Tempus","Energy"]
-},
-"Fluxo Adaptativo":{
- desc:"Dano maior que 2x reduz em 20%. Dano maior que 4x reduz 50%.",
- adaptive:true
-},
-"Núcleo Estável":{
- desc:"Limita fraquezas a somente 2x. Resistências reduzidas em 15%.",
- capAll:2,
- resistPenalty:0.15
-},
-"Vazio Absoluto":{
- desc:"Imune a Luz e Caos, Remove o limite de fraquezas, permitindo até 8x de qualquer elemento.",
- voidAbsolute:true,
- unlock8x:true
-}
+"Nenhuma":{desc:"Sem efeitos adicionais."},
+"Campo de Dissolução":{desc:"Energia desce um nível (fraqueza > neutro > resistência > imunidade).",dissolveEnergy:true},
+"Marca da Desgraça":{desc:"Fraqueza a Espiralia. Imune a Tempus, Penitencia e Energia.",forceWeak:{Espiralia:8},immune:["Tempus","Energia", "Penitencia"]},
+"Fluxo Adaptativo":{desc:"Dano >2x reduz 20%, >4x reduz 50%, 8x reduz 80%.",adaptive:true},
+"Núcleo Estável":{desc:"Nenhum ataque passa de 2x. Resistências perdem 15%.",capAll:2,resistPenalty:0.15},
+"Vazio Absoluto":{desc:"Considera todos os elementos selecionados + Vazio, Luz e Caos. Libera até 8x.",voidAbsolute:true,unlock8x:true},
+"Omnipresença":{desc:"Calcula multiplicador médio de todos os elementos, ignorando imunidades.",omnipresence:true},
+"Resiliência Bruta":{desc:"Dano de Fogo/Agua/Energia:0.5x, Vazio/Genesis:0.75x.",resilience:true}
 };
 
-/* ===================== UI ===================== */
+/* ================= VARIÁVEIS ================= */
 const grid=document.getElementById("elements");
+const resultTable=document.getElementById("resultTable");
 const skillSel=document.getElementById("skill");
 const skillDesc=document.getElementById("skillDesc");
-const immune=document.getElementById("immune");
-const resist=document.getElementById("resist");
-const neutral=document.getElementById("neutral");
-const weak=document.getElementById("weak");
+const tripleToggle=document.getElementById("tripleMode");
 
 let selected=[];
-let skill="Nenhuma";
+let tripleMode=false;
+let skillSelected=[];
 
-/* ===================== UTIL ===================== */
-function fmt(x){
-  return Number.isInteger(x)? `${x}x` : `${x.toFixed(2).replace(/\.00$/,"")}x`;
+function maxSelect(){ return tripleMode?3:2; }
+function fmt(x){ return Number.isInteger(x)?`${x}x`:`${x.toFixed(2).replace(/\.00$/,"")}x`; }
+function isLocked(el){
+  for(const f in FUSIONS){
+    if(selected.includes(f) && FUSIONS[f].includes(el)) return true;
+    if(selected.includes(el) && FUSIONS[f].includes(f)) return true;
+  }
+  return false;
 }
 
-/* ===================== BOTÕES ===================== */
+/* ================= TOGGLE ELEMENTOS ================= */
+function toggle(el){
+  if(isLocked(el)) return;
+  if(selected.includes(el)){
+    selected = selected.filter(e => e !== el);
+    update();
+    return;
+  }
+
+  // Verifica se completa alguma fusão
+  for(const fusion in FUSIONS){
+    const parts = FUSIONS[fusion];
+    if(parts.includes(el) && parts.some(p => selected.includes(p))){
+      selected = selected.filter(e => !parts.includes(e));
+      selected = selected.filter(e => !Object.keys(FUSIONS).includes(e));
+      if(selected.length >= maxSelect()) selected.shift();
+      selected.push(fusion);
+      update();
+      return;
+    }
+  }
+
+  if(FUSIONS[el]){
+    selected = selected.filter(e => !FUSIONS[el].includes(e));
+  }
+
+  if(selected.length >= maxSelect()) selected.shift();
+  selected.push(el);
+  update();
+}
+
+/* ================= BUILD UI ================= */
 ELEMENTS.forEach(el=>{
   const b=document.createElement("div");
   b.className="el-btn";
@@ -207,115 +247,89 @@ ELEMENTS.forEach(el=>{
 
 Object.keys(SKILLS).forEach(s=>{
   const o=document.createElement("option");
-  o.value=s;
-  o.textContent=s;
+  o.value=s;o.textContent=s;
   skillSel.appendChild(o);
 });
 
 skillSel.onchange=()=>{
-  skill=skillSel.value;
-  skillDesc.textContent=SKILLS[skill].desc;
+  skillSelected = Array.from(skillSel.selectedOptions).map(o=>o.value);
+  skillDesc.textContent = skillSelected.map(s=>SKILLS[s].desc).join(" | ");
   update();
 };
 
-/* ===================== LÓGICA ===================== */
-function isLocked(el){
-  for(const f in FUSIONS){
-    if(selected.includes(f)&&FUSIONS[f].includes(el)) return true;
-    if(selected.includes(el)&&FUSIONS[f].includes(f)) return true;
-  }
-  return false;
-}
-
-function toggle(el){
-  // Se já estiver selecionado, desmarca
-  if(selected.includes(el)){
-    selected = selected.filter(e => e !== el);
-    update();
-    return;
-  }
-
-  // Se for fusão, remove automaticamente os componentes
-  if(FUSIONS[el]){
-    selected = selected.filter(e => !FUSIONS[el].includes(e));
-  }
-
-  // Se for base e alguma fusão que usa ele já estiver selecionada, bloqueia
-  for(const f in FUSIONS){
-    if(FUSIONS[f].includes(el) && selected.includes(f)){
-      return; // não deixa selecionar
-    }
-  }
-
-  // Limite de 2 elementos
-  if(selected.length < 2){
-    selected.push(el);
-  }
-
+tripleToggle.onchange=e=>{
+  tripleMode=e.target.checked;
+  if(!tripleMode && selected.length>2) selected=selected.slice(0,2);
   update();
-}
-  
-function calc(atk){
-  let mult=1;
-  let imm=false;
-  const sk=SKILLS[skill];
+};
 
-  // Base elemental
-  selected.forEach(d=>{
-    const m=M[d]?.[atk] ?? 1;
-    if(m===0) imm=true;
-    else mult*=m;
+/* ================= CALC ================= */
+const allowedVals = [0,0.25,0.5,0.75,1,1.5,2,4,6,8];
+function roundAllowed(x){
+  let closest = allowedVals.reduce((a,b)=>Math.abs(b-x)<Math.abs(a-x)?b:a);
+  return closest;
+}
+
+function calc(atk){
+  let mult=1, imm=false;
+
+  let elems = [...selected];
+
+  if(skillSelected.includes("Vazio Absoluto")){
+    ["Vazio","Luz","Caos"].forEach(e=>{
+      if(!elems.includes(e)) elems.push(e);
+    });
+  }
+
+  if(skillSelected.includes("Omnipresença")){
+    let values = elems.map(e=>M[e]?.[atk]??1).filter(v=>v!==0);
+    if(values.length>0){
+      let avg = values.reduce((a,b)=>a*b,1)**(1/values.length);
+      mult = Math.min(Math.max(avg,0.25),8);
+    } else mult=0;
+  } else {
+    elems.forEach(e=>{
+      const val = M[e]?.[atk] ?? 1;
+      if(val===0) imm=true; else mult*=val;
+    });
+  }
+
+  // Skills
+  skillSelected.forEach(s=>{
+    const sk = SKILLS[s];
+    if(sk.immune?.includes(atk)) imm=true;
+    if(sk.forceWeak?.[atk]) mult=sk.forceWeak[atk];
+    if(sk.dissolveEnergy && atk==="Energia" && !imm){
+      if(mult>1) mult/=2; else if(mult===1) mult=0.5; else if(mult<=0.25) imm=true; else mult/=2;
+    }
+    if(sk.adaptive){
+      if(mult>8) mult*=0.2; 
+      else if(mult>4) mult*=0.5;
+      else if(mult>2) mult*=0.8;
+    }
+    if(sk.capAll) mult=Math.min(mult,sk.capAll);
+    if(sk.resistPenalty && mult<1) mult+=sk.resistPenalty;
+    if(sk.resilience){
+      if(["Fogo","Agua","Energia"].includes(atk)) mult*=0.5;
+      if(["Vazio","Genesis"].includes(atk)) mult*=0.75;
+    }
+    if(sk.voidAbsolute && (atk==="Luz"||atk==="Vazio"||atk==="Caos")){ imm=true; mult=2; }
   });
 
-  if(sk.immune?.includes(atk)) imm=true;
-  if(sk.forceWeak?.[atk]) mult=sk.forceWeak[atk];
-
-  // Campo de Dissolução (Energia por níveis)
-  if(sk.dissolveEnergy && atk==="Energy" && !imm){
-    if(mult > 1){
-      mult /= 2;
-    }else if(mult === 1){
-      mult = 0.5;
-    }else if(mult <= 0.25){
-      imm = true;
-    }else{
-      mult /= 2;
-    }
+  // Tempus: fraqueza → 1x, resist/immune mantêm
+  if(selected.includes("Tempus")){
+    if(mult<1 && !imm) mult=1;
   }
 
-  // Vazio Absoluto
-  if(sk.voidAbsolute && (atk==="Light"||atk==="Chaos")){
-    imm=true;
-    mult=2;
-  }
+  // Limites máximos
+  if(atk!=="Espiralia") mult=Math.min(mult,4);
+  else mult=Math.min(mult,8);
 
-  if(sk.adaptive){
-    if(mult>4) mult*=0.5;
-    else if(mult>2) mult*=0.8;
-  }
-
-  if(sk.resistPenalty && mult<1)
-    mult+=sk.resistPenalty;
-
-  if(sk.capAll) mult=Math.min(mult,sk.capAll);
-
-  if(selected.includes("Tempus") && mult>1 && atk!=="Espiralia")
-    mult=1;
-
-  const cap = sk.unlock8x ? 8 : (atk==="Espiralia"?8:4);
-  mult=Math.min(mult,cap);
-
+  mult = roundAllowed(mult); // arredondar pro valor fixo permitido
   return imm?0:mult;
 }
 
-function li(el,t){
-  const l=document.createElement("li");
-  const i=document.createElement("img");
-  i.src=icon(el);
-  l.append(i,t);
-  return l;
-}
-
+/* ================= UPDATE ================= */
 function update(){
   document.querySelectorAll(".el-btn").forEach(b=>{
     const el=b.dataset.el;
@@ -323,14 +337,27 @@ function update(){
     b.classList.toggle("locked",isLocked(el));
   });
 
-  immune.innerHTML=resist.innerHTML=weak.innerHTML=neutral.innerHTML="";
+  resultTable.innerHTML="";
+  let results = ELEMENTS.map(atk=>({atk,m:calc(atk)}));
+  results.sort((a,b)=>b.m-a.m); // maior → menor
 
-  ELEMENTS.forEach(atk=>{
-    const m=calc(atk);
-    if(m===0) immune.appendChild(li(atk,atk));
-    else if(m<1) resist.appendChild(li(atk,`${atk} (${fmt(m)})`));
-    else if(m>1) weak.appendChild(li(atk,`${atk} (${fmt(m)})`));
-    else neutral.appendChild(li(atk,`${atk} (1x)`));
+  results.forEach(({atk,m})=>{
+    const tr=document.createElement("tr");
+    const td1=document.createElement("td");
+    const img=document.createElement("img");
+    img.src=icon(atk);
+    td1.appendChild(img);
+    td1.appendChild(document.createTextNode(atk));
+    const td2=document.createElement("td");
+    td2.textContent=(m===0)?"Imune":fmt(m);
+
+    if(m===0) td2.className="immune";
+    else if(m<1) td2.className="resist";
+    else if(m>1) td2.className="weak";
+    else td2.className="neutral";
+
+    tr.append(td1,td2);
+    resultTable.appendChild(tr);
   });
 }
 
