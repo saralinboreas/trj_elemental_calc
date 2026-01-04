@@ -228,12 +228,33 @@ function isLocked(el){
 }
 
 function toggle(el){
-  if(isLocked(el)) return;
-  if(selected.includes(el)) selected=selected.filter(e=>e!==el);
-  else if(selected.length<2) selected.push(el);
+  // Se já estiver selecionado, desmarca
+  if(selected.includes(el)){
+    selected = selected.filter(e => e !== el);
+    update();
+    return;
+  }
+
+  // Se for fusão, remove automaticamente os componentes
+  if(FUSIONS[el]){
+    selected = selected.filter(e => !FUSIONS[el].includes(e));
+  }
+
+  // Se for base e alguma fusão que usa ele já estiver selecionada, bloqueia
+  for(const f in FUSIONS){
+    if(FUSIONS[f].includes(el) && selected.includes(f)){
+      return; // não deixa selecionar
+    }
+  }
+
+  // Limite de 2 elementos
+  if(selected.length < 2){
+    selected.push(el);
+  }
+
   update();
 }
-
+  
 function calc(atk){
   let mult=1;
   let imm=false;
