@@ -1,368 +1,62 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Calculadora Elemental</title>
-  
-<!-- ================= EMBED / OPEN GRAPH ================= -->
-
-<meta property="og:type" content="website">
-<meta property="og:title" content="The Relic Journey Project">
-<meta property="og:description" content="Calculadora elemental do RPG.">
-<meta property="og:url" content="https://saralinboreas.github.io/trj_elemental_calc/">
-
-<meta property="og:image" content="https://cdn.discordapp.com/icons/1304557655825711169/a_13d15f274c0c20a4f0f4eddcecd04f9f.gif?size=2048">
-<meta property="og:image:width" content="2048">
-<meta property="og:image:height" content="2048">
-
-<!-- Twitter / X -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="The Relic Journey Project">
-<meta name="twitter:description" content="Calculadora elemental do RPG.">
-<meta name="twitter:image" content="https://cdn.discordapp.com/icons/1304557655825711169/a_13d15f274c0c20a4f0f4eddcecd04f9f.gif?size=2048">
-
-<!-- ================= FIM EMBED ================= -->
-
-<style>
-body {
-  min-height:100vh;
-  background:linear-gradient(180deg,#1b1b24,#050507);
-  color:#eee;
-  font-family:sans-serif;
-  padding:20px;
-}
-.box {
-  background:#141420;
-  padding:24px;
-  border-radius:18px;
-  max-width:1100px;
-  margin:auto;
-  box-shadow:0 0 40px rgba(0,0,0,.6);
-}
-h2,h3{text-align:center;margin:12px 0;}
-.grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
-  gap:12px;
-  justify-items:center;
-}
-.el-btn {
-  background:#1e1e2e;
-  border-radius:14px;
-  padding:10px;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  transition:.2s;
-  width:100%;
-  box-sizing:border-box;
-  border:2px solid transparent;
-}
-.el-btn img{width:22px;height:22px}
-.el-btn.selected{
-  background:#151522;
-  border:2px solid #ff8a8a;
-  transform:translateY(1px) scale(.98);
-}
-.el-btn.locked{
-  opacity:.25;
-  pointer-events:none;
-}
-
-select{
-  width:100%;
-  background:#0e0e15;
-  color:#eee;
-  border:1px solid #222;
-  padding:10px;
-  border-radius:10px;
-  margin-bottom:12px;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:12px;
-  table-layout:fixed;
-}
-th,td{
-  padding:8px;
-  text-align:center;
-  border:1px solid #222;
-  border-radius:6px;
-  font-weight:bold;
-}
-th{background:#222;}
-td img{
-  width:20px;
-  height:20px;
-  vertical-align:middle;
-  margin-right:4px;
-}
-
-/* Cores pastel definidas */
-.weak{background:#fca5a5;color:#000;}      /* vermelho claro */
-.resist{background:#86efac;color:#000;}    /* verde pastel */
-.neutral{background:#d4d4d8;color:#000;}   /* cinza */
-.immune{background:#c084fc;color:#000;}    /* roxo pastel */
-
-.small{font-size:13px;color:#aaa;}
-label.small{display:block;margin-top:12px;font-size:14px;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Element.help — Calculadora Elemental</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div class="box">
-<h2>Calculadora Elemental</h2>
-<h3>Selecione os Elementos</h3>
-<div id="elements" class="grid"></div>
+  <header class="topbar">
+    <div class="brand-wrap">
+      <div class="brand-icon"></div>
+      <div>
+        <h1>Calculadora Elemental</h1>
+        <p>The Relic Journey Project</p>
+      </div>
+    </div>
+    <!-- <button class="menu-btn" type="button" aria-label="Menu">☰</button> -->
+  </header>
 
-<h3>Habilidades</h3>
-<select id="skill" multiple size="5"></select>
-<p id="skillDesc" class="small"></p>
+  <main class="app-shell">
+    <section class="mode-strip panel-like">
+      <button class="mode-btn active" type="button" id="defenseModeBtn" aria-pressed="true">
+        <span class="mode-icon">🛡</span>
+        <span>Defesa</span>
+      </button>
+      <button class="mode-btn" type="button" id="attackModeBtn" aria-pressed="false">
+        <span class="mode-icon">⚔</span>
+        <span>Ataque</span>
+      </button>
+      <button class="mode-btn clear-mode" type="button" id="clearBtn">
+        <span class="mode-icon">✕</span>
+        <span>Limpar</span>
+      </button>
+    </section>
 
-<label class="small">
-  <input type="checkbox" id="tripleMode">
-  Modo Experimental (até 3 elementos)
-</label>
+    <section class="panel selector-panel">
+      <div class="panel-header compact-header sticky-subheader">
+        <div>
+          <h2 id="selectorTitle">Escolha até 2 elementos de defesa</h2>
+          <p class="panel-subtitle">Toque em 1 ou 2 elementos para combinar.</p>
+        </div>
+      </div>
+      <div id="selectedBadges" class="selected-badges"></div>
+      <div id="elementGrid" class="element-grid"></div>
+    </section>
 
-<h3>Resultado</h3>
-<table>
-<thead>
-<tr><th>Elemento</th><th>Multiplicador</th></tr>
-</thead>
-<tbody id="resultTable"></tbody>
-</table>
-</div>
+    <section class="panel results-panel">
+      <div class="panel-header compact-header sticky-subheader">
+        <div>
+          <h2 id="resultsTitle">Dano recebido por tipo atacante</h2>
+          <p class="panel-subtitle">Fraquezas, resistências, neutros e imunidades.</p>
+        </div>
+      </div>
+      <div id="resultsContainer" class="results-container"></div>
+    </section>
+  </main>
 
-<script>
-/* ================= DADOS ================= */
-const ELEMENTS=[
-"Fogo","Agua","Terra","Energia","Luz","Vazio","Caos",
-"Genesis","Ruptura","Disciplina","Ar","Penitencia",
-"Tempus","Degradacao","Electruid","Espiralia"
-];
-
-const FUSIONS={
-  Electruid:["Agua","Energia"],
-  Disciplina:["Genesis","Ruptura"],
-  Penitencia:["Vazio", "Caos", "Luz"]
-};
-
-const icon=e=>`icons/${e.toLowerCase()}.png`;
-
-const M = {
-Fogo:{Degradacao:4,Tempus:4,Penitencia:4,Espiralia:4,Agua:2,Luz:2,Vazio:2,Caos:2,Electruid:1.5,Terra:0.5,Fogo:0},
-Agua:{Degradacao:4,Tempus:4,Penitencia:4,Espiralia:4,Energia:2,Luz:2,Vazio:2,Caos:2,Electruid:1.5,Genesis:1.5,Fogo:0.5,Ruptura:0.5,Agua:0},
-Terra:{Degradacao:4,Tempus:4,Penitencia:4,Espiralia:4,Fogo:2,Luz:2,Vazio:2,Caos:2,Ruptura:1.5,Disciplina:1.5,Electruid:0.75,Energia:0.5,Terra:0},
-Energia:{Degradacao:4,Tempus:4,Penitencia:4,Espiralia:4,Terra:2,Luz:2,Vazio:2,Caos:2,Ruptura:1.5,Agua:0.5,Genesis:0.5,Electruid:0.25,Energia:0},
-Luz:{Degradacao:4,Penitencia:4,Espiralia:4,Vazio:2,Caos:2,Tempus:2,Energia:0.75,Fogo:0.75,Genesis:0.75,Ruptura:0.75,Terra:0.75,Agua:0.75,Electruid:0.5,Luz:0},
-Vazio:{Degradacao:4,Penitencia:4,Espiralia:4,Luz:2,Caos:2,Tempus:2,Energia:0.75,Fogo:0.75,Genesis:0.75,Ruptura:0.75,Terra:0.75,Agua:0.75,Electruid:0.5,Vazio:0},
-Caos:{Degradacao:4,Penitencia:4,Espiralia:4,Vazio:2,Luz:2,Tempus:2,Genesis:2,Ruptura:2,Disciplina:2,Energia:0.75,Fogo:0.75,Terra:0.75,Agua:0.75,Electruid:0.5,Caos:0},
-Genesis:{Degradacao:4,Penitencia:4,Espiralia:4,Disciplina:4,Luz:2,Vazio:2,Caos:2,Tempus:2,Ruptura:2,Energia:1.5,Agua:0.75,Genesis:0},
-Ruptura:{Degradacao:4,Penitencia:4,Espiralia:4,Disciplina:4,Luz:2,Vazio:2,Caos:2,Tempus:2,Genesis:2,Energia:1.5,Electruid:0.75,Ruptura:0},
-Disciplina:{Degradacao:2.5,Penitencia:2.5,Tempus:2.5,Espiralia:2.5,Ar:2.5,Luz:1.5,Caos:1.5,Vazio:1.5,Genesis:0,Ruptura:0},
-Ar:{Espiralia:8,Degradacao:4,Luz:2,Caos:2,Vazio:2,Penitencia:2,Tempus:2,Electruid:0.25,Genesis:0.25,Ruptura:0.25,Ar:0},
-Penitencia:{Espiralia:8,Degradacao:4,Luz:0.75,Caos:0.75,Vazio:0.75,Disciplina:0.5,Fogo:0.5,Agua:0.5,Terra:0.5,Energia:0.5,Penitencia:0,Genesis:0,Ruptura:0,Electruid:0},
-Tempus:{Tempus:0},
-Degradacao:{Espiralia:2,Tempus:1,Luz:0.75,Caos:0.75,Vazio:0.75,Disciplina:0.5,Fogo:0.5,Agua:0.5,Terra:0.5,Genesis:0,Ruptura:0,Electruid:0,Ar:0,Penitencia:0},
-Electruid:{Degradacao:8,Tempus:8,Penitencia:8,Espiralia:8,Luz:4,Vazio:4,Caos:4,Terra:2,Genesis:0.75,Ruptura:0.75,Fogo:0.5,Energia:0,Agua:0,Electruid:0},
-Espiralia:{Espiralia:2,Degradacao:1,Tempus:1,Luz:0.75,Caos:0.75,Vazio:0.75,Disciplina:0.5,Fogo:0.5,Agua:0.5,Terra:0.5,Genesis:0,Ruptura:0,Electruid:0,Ar:0}
-};
-
-const SKILLS={
-"Nenhuma":{desc:"Sem efeitos adicionais."},
-"Campo de Dissolução":{desc:"Energia desce um nível (fraqueza > neutro > resistência > imunidade).",dissolveEnergy:true},
-"Marca da Desgraça":{desc:"Fraqueza a Espiralia. Imune a Tempus, Penitencia e Energia.",forceWeak:{Espiralia:8},immune:["Tempus","Energia", "Penitencia"]},
-"Fluxo Adaptativo":{desc:"Dano >2x reduz 20%, >4x reduz 50%, 8x reduz 80%.",adaptive:true},
-"Núcleo Estável":{desc:"Nenhum ataque passa de 2x. Resistências perdem 15%.",capAll:2,resistPenalty:0.15},
-"Vazio Absoluto":{desc:"Considera todos os elementos selecionados + Vazio, Luz e Caos. Libera até 8x.",voidAbsolute:true,unlock8x:true},
-"Omnipresença":{desc:"Calcula multiplicador médio de todos os elementos, ignorando imunidades.",omnipresence:true},
-"Resiliência Bruta":{desc:"Dano de Fogo/Agua/Energia:0.5x, Vazio/Genesis:0.75x.",resilience:true}
-};
-
-/* ================= VARIÁVEIS ================= */
-const grid=document.getElementById("elements");
-const resultTable=document.getElementById("resultTable");
-const skillSel=document.getElementById("skill");
-const skillDesc=document.getElementById("skillDesc");
-const tripleToggle=document.getElementById("tripleMode");
-
-let selected=[];
-let tripleMode=false;
-let skillSelected=[];
-
-function maxSelect(){ return tripleMode?3:2; }
-function fmt(x){ return Number.isInteger(x)?`${x}x`:`${x.toFixed(2).replace(/\.00$/,"")}x`; }
-function isLocked(el){
-  for(const f in FUSIONS){
-    if(selected.includes(f) && FUSIONS[f].includes(el)) return true;
-    if(selected.includes(el) && FUSIONS[f].includes(f)) return true;
-  }
-  return false;
-}
-
-/* ================= TOGGLE ELEMENTOS ================= */
-function toggle(el){
-  if(isLocked(el)) return;
-  if(selected.includes(el)){
-    selected = selected.filter(e => e !== el);
-    update();
-    return;
-  }
-
-  // Verifica se completa alguma fusão
-  for(const fusion in FUSIONS){
-    const parts = FUSIONS[fusion];
-    if(parts.includes(el) && parts.some(p => selected.includes(p))){
-      selected = selected.filter(e => !parts.includes(e));
-      selected = selected.filter(e => !Object.keys(FUSIONS).includes(e));
-      if(selected.length >= maxSelect()) selected.shift();
-      selected.push(fusion);
-      update();
-      return;
-    }
-  }
-
-  if(FUSIONS[el]){
-    selected = selected.filter(e => !FUSIONS[el].includes(e));
-  }
-
-  if(selected.length >= maxSelect()) selected.shift();
-  selected.push(el);
-  update();
-}
-
-/* ================= BUILD UI ================= */
-ELEMENTS.forEach(el=>{
-  const b=document.createElement("div");
-  b.className="el-btn";
-  b.dataset.el=el;
-  const img=document.createElement("img");
-  img.src=icon(el);
-  b.append(img,el);
-  b.onclick=()=>toggle(el);
-  grid.appendChild(b);
-});
-
-Object.keys(SKILLS).forEach(s=>{
-  const o=document.createElement("option");
-  o.value=s;o.textContent=s;
-  skillSel.appendChild(o);
-});
-
-skillSel.onchange=()=>{
-  skillSelected = Array.from(skillSel.selectedOptions).map(o=>o.value);
-  skillDesc.textContent = skillSelected.map(s=>SKILLS[s].desc).join(" | ");
-  update();
-};
-
-tripleToggle.onchange=e=>{
-  tripleMode=e.target.checked;
-  if(!tripleMode && selected.length>2) selected=selected.slice(0,2);
-  update();
-};
-
-/* ================= CALC ================= */
-const allowedVals = [0,0.25,0.5,0.75,1,1.5,2,4,6,8];
-function roundAllowed(x){
-  let closest = allowedVals.reduce((a,b)=>Math.abs(b-x)<Math.abs(a-x)?b:a);
-  return closest;
-}
-
-function calc(atk){
-  let mult=1, imm=false;
-
-  let elems = [...selected];
-
-  if(skillSelected.includes("Vazio Absoluto")){
-    ["Vazio","Luz","Caos"].forEach(e=>{
-      if(!elems.includes(e)) elems.push(e);
-    });
-  }
-
-  if(skillSelected.includes("Omnipresença")){
-    let values = elems.map(e=>M[e]?.[atk]??1).filter(v=>v!==0);
-    if(values.length>0){
-      let avg = values.reduce((a,b)=>a*b,1)**(1/values.length);
-      mult = Math.min(Math.max(avg,0.25),8);
-    } else mult=0;
-  } else {
-    elems.forEach(e=>{
-      const val = M[e]?.[atk] ?? 1;
-      if(val===0) imm=true; else mult*=val;
-    });
-  }
-
-  // Skills
-  skillSelected.forEach(s=>{
-    const sk = SKILLS[s];
-    if(sk.immune?.includes(atk)) imm=true;
-    if(sk.forceWeak?.[atk]) mult=sk.forceWeak[atk];
-    if(sk.dissolveEnergy && atk==="Energia" && !imm){
-      if(mult>1) mult/=2; else if(mult===1) mult=0.5; else if(mult<=0.25) imm=true; else mult/=2;
-    }
-    if(sk.adaptive){
-      if(mult>8) mult*=0.2; 
-      else if(mult>4) mult*=0.5;
-      else if(mult>2) mult*=0.8;
-    }
-    if(sk.capAll) mult=Math.min(mult,sk.capAll);
-    if(sk.resistPenalty && mult<1) mult+=sk.resistPenalty;
-    if(sk.resilience){
-      if(["Fogo","Agua","Energia"].includes(atk)) mult*=0.5;
-      if(["Vazio","Genesis"].includes(atk)) mult*=0.75;
-    }
-    if(sk.voidAbsolute && (atk==="Luz"||atk==="Vazio"||atk==="Caos")){ imm=true; mult=2; }
-  });
-
-  // Tempus: fraqueza → 1x, resist/immune mantêm
-  if(selected.includes("Tempus")){
-    if(mult<1 && !imm) mult=1;
-  }
-
-  // Limites máximos
-  if(atk!=="Espiralia") mult=Math.min(mult,4);
-  else mult=Math.min(mult,8);
-
-  mult = roundAllowed(mult); // arredondar pro valor fixo permitido
-  return imm?0:mult;
-}
-
-/* ================= UPDATE ================= */
-function update(){
-  document.querySelectorAll(".el-btn").forEach(b=>{
-    const el=b.dataset.el;
-    b.classList.toggle("selected",selected.includes(el));
-    b.classList.toggle("locked",isLocked(el));
-  });
-
-  resultTable.innerHTML="";
-  let results = ELEMENTS.map(atk=>({atk,m:calc(atk)}));
-  results.sort((a,b)=>b.m-a.m); // maior → menor
-
-  results.forEach(({atk,m})=>{
-    const tr=document.createElement("tr");
-    const td1=document.createElement("td");
-    const img=document.createElement("img");
-    img.src=icon(atk);
-    td1.appendChild(img);
-    td1.appendChild(document.createTextNode(atk));
-    const td2=document.createElement("td");
-    td2.textContent=(m===0)?"Imune":fmt(m);
-
-    if(m===0) td2.className="immune";
-    else if(m<1) td2.className="resist";
-    else if(m>1) td2.className="weak";
-    else td2.className="neutral";
-
-    tr.append(td1,td2);
-    resultTable.appendChild(tr);
-  });
-}
-
-update();
-</script>
+  <script type="module" src="js/public-api.js"></script>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
