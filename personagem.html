@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visualizador de Personagem</title>
+  <style>
+    :root {
+      --bg: #0f1116;
+      --panel: #171a22;
+      --panel-2: #1d2230;
+      --line: rgba(255,255,255,.08);
+      --text: #eef2ff;
+      --muted: #a9b0c7;
+      --blood: #8e1731;
+      --blood-soft: #d94067;
+      --shadow: 0 14px 34px rgba(0,0,0,.35);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b0d12, #141822 65%, #0d1017);
+      color: var(--text);
+      padding: 16px;
+    }
+
+    .app {
+      max-width: 1380px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 390px minmax(0, 1fr);
+    }
+
+    .panel {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .editor {
+      padding: 16px;
+      position: sticky;
+      top: 16px;
+      align-self: start;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+    }
+
+    .editor h1 {
+      margin: 0 0 12px;
+      font-size: 1.25rem;
+    }
+
+    .group {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .group:first-of-type {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .group h2 {
+      margin: 0 0 10px;
+      font-size: .95rem;
+      color: var(--muted);
+      letter-spacing: .02em;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .field label {
+      font-size: .82rem;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      background: #10141c;
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    .field textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    .inline-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .res-grid,
+    .skill-grid,
+    .character-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .res-grid,
+    .skill-grid {
+      max-height: 270px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .character-list {
+      max-height: 180px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .res-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 92px auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .skill-row {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+      background: rgba(255,255,255,.02);
+    }
+
+    .skill-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 120px auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .char-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.02);
+    }
+
+    .char-meta {
+      min-width: 0;
+    }
+
+    .char-title {
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .char-sub {
+      color: var(--muted);
+      font-size: .8rem;
+      margin-top: 2px;
+    }
+
+    .char-actions,
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn,
+    .toolbar button,
+    .char-actions button,
+    .res-row button,
+    .skill-head button {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #2c3341, #202632);
+      color: #fff;
+      border-radius: 14px;
+      padding: 10px 12px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn.small,
+    .char-actions button,
+    .res-row button,
+    .skill-head button {
+      padding: 8px 10px;
+      font-size: .84rem;
+    }
+
+    .btn.danger {
+      background: linear-gradient(180deg, #63212d, #4a1620);
+    }
+
+    .preview {
+      padding: 22px;
+      overflow: hidden;
+      position: relative;
+      min-height: 720px;
+      background:
+        radial-gradient(circle at top right, rgba(217,64,103,.16), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+    }
+
+    .card {
+      max-width: 980px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 168px minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .portrait-wrap {
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 10px;
+    }
+
+    .portrait {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #0f1219;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+    }
+
+    .portrait img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .portrait-empty {
+      color: var(--muted);
+      font-weight: 700;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .sheet {
+      padding-top: 6px;
+    }
+
+    .ghost-line {
+      color: rgba(255,255,255,.28);
+      margin-bottom: 8px;
+      font-weight: 700;
+      letter-spacing: .08em;
+    }
+
+    .title-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .element-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(180deg, var(--blood-soft), var(--blood));
+      border: 1px solid rgba(255,255,255,.1);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      box-shadow: 0 10px 20px rgba(0,0,0,.2);
+    }
+
+    .element-chip img,
+    .def-name img,
+    .skill-tag img {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    .element-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.95);
+    }
+
+    .char-name {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 900;
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      margin: 8px 0 14px;
+      color: #d7ddef;
+      font-weight: 800;
+    }
+
+    .stat-list {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .stat-line {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      flex-wrap: wrap;
+      font-size: 1.03rem;
+      line-height: 1.2;
+    }
+
+    .stat-icon {
+      width: 26px;
+      display: inline-flex;
+      justify-content: center;
+      opacity: .92;
+    }
+
+    .label {
+      color: #d8dded;
+      font-weight: 800;
+    }
+
+    .value {
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+      margin: 18px 0;
+    }
+
+    .def-title,
+    .skill-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.02rem;
+      margin-bottom: 8px;
+      font-weight: 900;
+    }
+
+    .def-list,
+    .skill-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .def-row-preview {
+      display: grid;
+      grid-template-columns: 28px minmax(120px, 220px) 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px dashed rgba(255,255,255,.06);
+    }
+
+    .def-row-preview:last-child {
+      border-bottom: 0;
+    }
+
+    .def-icon {
+      font-size: 1rem;
+      opacity: .9;
+      text-align: center;
+    }
+
+    .def-name {
+      font-weight: 800;
+      color: #d6dcee;
+    }
+
+    .def-value {
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .skill-card {
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.03);
+    }
+
+    .skill-card-head {
+      font-weight: 900;
+      margin-bottom: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .skill-tag {
+      color: #d7ddef;
+    }
+
+    .skill-desc {
+      color: #c8d0e7;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .editor {
+        position: static;
+        max-height: none;
+      }
+
+      .card {
+        grid-template-columns: 1fr;
+      }
+
+      .portrait-wrap {
+        max-width: 190px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel editor">
+      <h1>Visualizador de Personagem</h1>
+
+      <div class="group">
+        <h2>Personagens salvos</h2>
+        <div id="characterList" class="character-list"></div>
+        <div class="toolbar" style="margin-top:10px;">
+          <button class="btn" type="button" id="newCharacterBtn">Novo personagem</button>
+          <button class="btn danger" type="button" id="deleteCharacterBtn">Excluir atual</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Foto</h2>
+        <div class="field">
+          <label for="photoInput">Adicionar foto</label>
+          <input id="photoInput" type="file" accept="image/*" />
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Identidade</h2>
+        <div class="field">
+          <label for="charElement">Elemento</label>
+          <input id="charElement" value="Blood" />
+        </div>
+        <div class="field">
+          <label for="charName">Nome</label>
+          <input id="charName" value="Mikoshi Chiyo" />
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Status</h2>
+        <div class="inline-2">
+          <div class="field">
+            <label for="hpNow">Vitalidade atual</label>
+            <input id="hpNow" type="number" value="500" />
+          </div>
+          <div class="field">
+            <label for="hpMax">Vitalidade máxima</label>
+            <input id="hpMax" type="number" value="500" />
+          </div>
+        </div>
+
+        <div class="inline-2">
+          <div class="field">
+            <label for="sanNow">Sanidade atual</label>
+            <input id="sanNow" type="number" value="100" />
+          </div>
+          <div class="field">
+            <label for="sanMax">Sanidade máxima</label>
+            <input id="sanMax" type="number" value="100" />
+          </div>
+        </div>
+
+        <div class="inline-2">
+          <div class="field">
+            <label for="atk">Ataque</label>
+            <input id="atk" type="number" value="22" />
+          </div>
+          <div class="field">
+            <label for="energyPotential">Energia Potencial</label>
+            <input id="energyPotential" value="100%" />
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Defesa / Resistências</h2>
+        <div id="resistanceEditor" class="res-grid"></div>
+        <div class="toolbar" style="margin-top:10px;">
+          <button class="btn" type="button" id="addResistanceBtn">Adicionar resistência</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Skills</h2>
+        <div id="skillEditor" class="skill-grid"></div>
+        <div class="toolbar" style="margin-top:10px;">
+          <button class="btn" type="button" id="addSkillBtn">Adicionar skill</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Exportar / Importar</h2>
+        <div class="toolbar">
+          <button class="btn" type="button" id="exportJsonBtn">Baixar JSON</button>
+          <button class="btn" type="button" id="importJsonBtn">Importar JSON</button>
+          <button class="btn" type="button" id="copyTextBtn">Copiar texto</button>
+        </div>
+        <input id="importFileInput" type="file" accept="application/json" style="display:none;" />
+      </div>
+
+      <p class="muted">Os dados ficam salvos no navegador. Você pode criar vários personagens, alternar entre eles e importar/exportar tudo em JSON.</p>
+    </aside>
+
+    <section class="panel preview">
+      <div class="card">
+        <div class="portrait-wrap">
+          <div id="portrait" class="portrait">
+            <div class="portrait-empty">Sem foto</div>
+          </div>
+        </div>
+
+        <div class="sheet">
+          <div class="ghost-line">_ _</div>
+
+          <div class="title-line">
+            <div class="element-chip">
+              <span id="previewElementIcon"></span>
+              <span id="previewElement">:ElementBlood:</span>
+            </div>
+            <div class="char-name" id="previewName">Mikoshi Chiyo</div>
+          </div>
+
+          <div class="section-title">— Status:</div>
+
+          <div class="stat-list">
+            <div class="stat-line"><span class="stat-icon">❤</span><span class="label">Vitalidade:</span> <span class="value" id="previewHp">(500/500)</span></div>
+            <div class="stat-line"><span class="stat-icon">🧠</span><span class="label">Sanidade:</span> <span class="value" id="previewSan">(100/100)</span></div>
+            <div class="stat-line"><span class="stat-icon">⚔</span><span class="label">Ataque:</span> <span class="value" id="previewAtk">22</span></div>
+            <div class="stat-line"><span class="stat-icon">✦</span><span class="label">Energia Potencial:</span> <span class="value" id="previewEnergy">100%</span></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="def-title">🛡 Defesa</div>
+          <div id="previewDefense" class="def-list"></div>
+
+          <div class="divider"></div>
+
+          <div class="skill-title">✦ Skills</div>
+          <div id="previewSkills" class="skill-list"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'character-visualizer-save-v2';
+
+    const defaultCharacter = () => ({
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+      element: 'Blood',
+      name: 'Mikoshi Chiyo',
+      hpNow: 500,
+      hpMax: 500,
+      sanNow: 100,
+      sanMax: 100,
+      atk: 22,
+      energyPotential: '100%',
+      photo: '',
+      resistances: [
+        ['Light', '+10'],
+        ['Void', '+10'],
+        ['Chaos', '+5'],
+        ['Energy', '+5'],
+        ['Fire', '+5'],
+        ['Terra', '+5'],
+        ['Water', '+5'],
+        ['Hydrogenese', '∞'],
+        ['Luxnitia', '∞'],
+        ['Primhora', '∞'],
+        ['Nihilum', '∞'],
+        ['Genesis', '∞'],
+        ['Rupture', '∞'],
+        ['Blood', '∞']
+      ],
+      skills: [
+        {
+          element: 'Blood',
+          name: 'Eclipse das Nove Luas',
+          description: 'Todo dano de Sangue se torna inevitavelmente super efetivo.'
+        }
+      ]
+    });
+
+    function loadStore() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          const first = defaultCharacter();
+          return { characters: [first], activeId: first.id };
+        }
+
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed.characters) || !parsed.characters.length) {
+          const first = defaultCharacter();
+          return { characters: [first], activeId: first.id };
+        }
+
+        return parsed;
+      } catch {
+        const first = defaultCharacter();
+        return { characters: [first], activeId: first.id };
+      }
+    }
+
+    let store = loadStore();
+
+    function saveStore() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    }
+
+    function getActiveCharacter() {
+      let active = store.characters.find((c) => c.id === store.activeId);
+      if (!active) {
+        active = store.characters[0] || defaultCharacter();
+        if (!store.characters.length) store.characters.push(active);
+        store.activeId = active.id;
+      }
+      return active;
+    }
+
+    const photoInput = document.getElementById('photoInput');
+    const charElement = document.getElementById('charElement');
+    const charName = document.getElementById('charName');
+    const hpNow = document.getElementById('hpNow');
+    const hpMax = document.getElementById('hpMax');
+    const sanNow = document.getElementById('sanNow');
+    const sanMax = document.getElementById('sanMax');
+    const atk = document.getElementById('atk');
+    const energyPotential = document.getElementById('energyPotential');
+    const resistanceEditor = document.getElementById('resistanceEditor');
+    const skillEditor = document.getElementById('skillEditor');
+    const characterList = document.getElementById('characterList');
+    const previewElement = document.getElementById('previewElement');
+    const previewElementIcon = document.getElementById('previewElementIcon');
+    const previewName = document.getElementById('previewName');
+    const previewHp = document.getElementById('previewHp');
+    const previewSan = document.getElementById('previewSan');
+    const previewAtk = document.getElementById('previewAtk');
+    const previewEnergy = document.getElementById('previewEnergy');
+    const previewDefense = document.getElementById('previewDefense');
+    const previewSkills = document.getElementById('previewSkills');
+    const portrait = document.getElementById('portrait');
+    const addResistanceBtn = document.getElementById('addResistanceBtn');
+    const addSkillBtn = document.getElementById('addSkillBtn');
+    const copyTextBtn = document.getElementById('copyTextBtn');
+    const exportJsonBtn = document.getElementById('exportJsonBtn');
+    const importJsonBtn = document.getElementById('importJsonBtn');
+    const importFileInput = document.getElementById('importFileInput');
+    const newCharacterBtn = document.getElementById('newCharacterBtn');
+    const deleteCharacterBtn = document.getElementById('deleteCharacterBtn');
+
+    function current() {
+      return getActiveCharacter();
+    }
+
+    function iconHtml(name, alt = '') {
+      const safe = String(name || '').trim();
+      if (!safe) return '';
+      return `<img src="icons/Element${safe}.png" alt="${alt || safe}" onerror="this.remove()">`;
+    }
+
+    function syncInputs() {
+      const c = current();
+      charElement.value = c.element || '';
+      charName.value = c.name || '';
+      hpNow.value = c.hpNow ?? 0;
+      hpMax.value = c.hpMax ?? 0;
+      sanNow.value = c.sanNow ?? 0;
+      sanMax.value = c.sanMax ?? 0;
+      atk.value = c.atk ?? 0;
+      energyPotential.value = c.energyPotential || '0%';
+    }
+
+    function renderCharacterList() {
+      characterList.innerHTML = store.characters.map((char) => `
+        <div class="char-item">
+          <div class="char-meta">
+            <div class="char-title">${char.name || 'Sem nome'}</div>
+            <div class="char-sub">${char.element || 'Sem elemento'}</div>
+          </div>
+          <div class="char-actions">
+            <button type="button" data-load-id="${char.id}">Abrir</button>
+          </div>
+        </div>
+      `).join('');
+
+      characterList.querySelectorAll('[data-load-id]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          store.activeId = btn.dataset.loadId;
+          saveStore();
+          syncInputs();
+          renderResistanceEditor();
+          renderSkillEditor();
+          renderCharacterList();
+          renderPreview();
+        });
+      });
+    }
+
+    function renderResistanceEditor() {
+      const c = current();
+      resistanceEditor.innerHTML = c.resistances.map((entry, index) => `
+        <div class="res-row">
+          <input data-kind="name" data-index="${index}" value="${entry[0]}" placeholder="Elemento" />
+          <input data-kind=
