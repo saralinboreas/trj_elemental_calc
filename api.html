@@ -1,28 +1,48 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Element.help API JSON</title>
-  <style>
-    body { margin: 0; background: #101114; color: #e8e8ea; font-family: monospace; }
-    pre { margin: 0; padding: 16px; white-space: pre-wrap; word-break: break-word; }
-  </style>
+<meta charset="UTF-8">
+<title>Element.help API</title>
 </head>
+
 <body>
-  <pre id="jsonOutput">{}</pre>
-  <script type="module">
-    import { buildCalculationPayload } from './js/calculator.js';
 
-    const params = new URLSearchParams(window.location.search);
-    const mode = params.get('mode') === 'attack' ? 'attack' : 'defense';
-    const elements = (params.get('elements') || '')
-      .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean);
+<pre id="json"></pre>
 
-    const payload = buildCalculationPayload(mode, elements);
-    document.getElementById('jsonOutput').textContent = JSON.stringify(payload, null, 2);
-  </script>
+<script type="module">
+
+import { buildCalculationPayload } from "./js/calculator.js";
+
+const params = new URLSearchParams(location.search);
+
+const mode =
+  params.get("mode") === "attack"
+  ? "attack"
+  : "defense";
+
+const elements =
+  (params.get("elements") || "")
+  .split(",")
+  .map(e => e.trim())
+  .filter(Boolean);
+
+const abilities =
+  (params.get("abilities") || "")
+  .split(",")
+  .map(e => e.trim())
+  .filter(Boolean);
+
+const result = buildCalculationPayload(
+  mode,
+  elements,
+  abilities
+);
+
+const json = JSON.stringify(result, null, 2);
+
+document.body.innerText = json;
+
+</script>
+
 </body>
 </html>
