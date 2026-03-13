@@ -143,7 +143,7 @@ export const ABILITIES = {
 
   Omnipresenca: {
     id: 'Omnipresenca',
-    name: 'Onmipresença',
+    name: 'Omnipresença',
     element: 'ElementDegradation',
 
     // altera a seleção de elementos antes do cálculo
