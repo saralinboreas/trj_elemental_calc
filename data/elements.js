@@ -39,11 +39,11 @@ export const OVERRIDES = {
   ElementBlood: { ElementBlood: 0, ElementChaos: 2, ElementGenesis: 2, ElementRupture: 2, ElementElectruid: 2 },
   ElementGenesis: { ElementGenesis: 0, ElementRupture: 2, ElementBlood: 0.5},
   ElementRupture: { ElementRupture: 0, ElementGenesis: 2, ElementBlood: 0.5 },
-  ElementElectruid: { ElementElectruid: 0, ElementWater: 0, ElementEnergy: 0, ElementTerra: 0.5, ElementFire: 2, ElementIce: 1.5, ElementAir: 1.5  },
+  ElementElectruid: { ElementElectruid: 0, ElementWater: 0, ElementEnergy: 0, ElementTerra: 0.5, ElementFire: 2, ElementIce: 0.5, ElementAir: 1.5  },
   ElementFire: { ElementFire: 0, ElementAir: 2, ElementIce: 2, ElementTerra: 2, ElementWater: 0.5, ElementElectruid: 0.5, ElementAnnihilation: 0.5, ElementPenance: 0.5, ElementDegradation: 0.5},
   ElementWater: { ElementElectruid: 0, ElementWater: 0, ElementFire: 2, ElementTerra: 1.5, ElementEnergy: 0.5, ElementIce: 0.75, ElementAnnihilation: 0.5, ElementPenance: 0.5, ElementDegradation: 0.5 },
-  ElementIce: { ElementIce: 0, ElementWater: 1.5, ElementAir: 1.5, ElementEnergy: 0.5, ElementFire: 0.5, ElementElectruid: 0.5, ElementAnnihilation: 0.5, ElementPenance: 0.5, ElementDegradation: 0.5 },
-  ElementEnergy: { ElementElectruid: 0, ElementEnergy: 0, ElementWater: 2, ElementIce: 2, ElementAir: 1.5, ElementTerra: 0.5, ElementAnnihilation: 0.5, ElementPenance: 0.5, ElementDegradation: 0.5},
-  ElementTerra: { ElementTerra: 0, ElementEnergy: 2, ElementElectruid: 1.5, ElementAir: 1.5, ElementFire: 0.5, ElementWater: 0.75, ElementAnnihilation: 0.5, ElementPenance: 0.5, ElementDegradation: 0.5 },
+  ElementIce: { ElementIce: 0, ElementWater: 1.5, ElementAir: 1.5, ElementEnergy: 2.0, ElementFire: 0.5, ElementTerra: 2, ElementElectruid: 0.5, ElementAnnihilation: 0.5, ElementPenance: 0.5, ElementDegradation: 0.5 },
+  ElementEnergy: { ElementElectruid: 0, ElementEnergy: 0, ElementWater: 2, ElementIce: 0.5, ElementAir: 1.5, ElementTerra: 0.5, ElementAnnihilation: 0.5, ElementPenance: 0.5, ElementDegradation: 0.5},
+  ElementTerra: { ElementTerra: 0, ElementEnergy: 2, ElementElectruid: 1.5, ElementAir: 1.5, ElementFire: 0.5, ElementWater: 0.75, ElementIce: 0.5, ElementAnnihilation: 0.5, ElementPenance: 0.5, ElementDegradation: 0.5 },
   ElementAir: { ElementAir: 0, ElementTerra: 1.5, ElementFire: 1.5, ElementPenance: 1.5, ElementIce: 0.75, ElementEnergy: 0.75, ElementAnnihilation: 0.5, ElementPenance: 0.5, ElementDegradation: 0.5}
 };
