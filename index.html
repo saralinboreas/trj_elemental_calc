@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRJ Elemental Calculator</title>
+  <meta name="description" content="Hub principal da TRJ Elemental Calculator. Acesse a calculadora ou a API." />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-1: #09090f;
+      --bg-2: #12131d;
+      --card: rgba(20, 22, 34, 0.88);
+      --line: rgba(255, 255, 255, 0.08);
+      --text: #f5f7ff;
+      --muted: #aeb6d3;
+      --accent-1: #8b5cf6;
+      --accent-2: #22d3ee;
+      --accent-3: #f43f5e;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(139, 92, 246, 0.22), transparent 30%),
+        radial-gradient(circle at top right, rgba(34, 211, 238, 0.18), transparent 25%),
+        radial-gradient(circle at bottom center, rgba(244, 63, 94, 0.16), transparent 30%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .panel {
+      width: 100%;
+      max-width: 980px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(14px);
+    }
+
+    .hero {
+      padding: 56px 28px 28px;
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 18px;
+      letter-spacing: 0.04em;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 6vw, 4rem);
+      line-height: 1.05;
+      margin-bottom: 16px;
+    }
+
+    .hero p {
+      max-width: 700px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.65;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      padding: 28px;
+    }
+
+    .card {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.18);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+    }
+
+    .card .icon {
+      font-size: 2rem;
+      margin-bottom: 14px;
+    }
+
+    .card h2 {
+      font-size: 1.45rem;
+      margin-bottom: 12px;
+    }
+
+    .card p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .tag {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.85rem;
+      color: #dce3ff;
+    }
+
+    .btn {
+      display: inline-block;
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+      padding: 12px 18px;
+      border-radius: 14px;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+
+    .btn-main {
+      background: linear-gradient(135deg, var(--accent-1), #6d28d9);
+    }
+
+    .btn-api {
+      background: linear-gradient(135deg, var(--accent-2), #0891b2);
+    }
+
+    .footer {
+      padding: 0 28px 28px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    .footer strong {
+      color: var(--text);
+    }
+
+    @media (max-width: 760px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding: 42px 20px 22px;
+      }
+
+      .grid,
+      .footer {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="panel">
+    <section class="hero">
+      <div class="badge">⚛️ The Relic Journey Project</div>
+      <h1>TRJ Elemental Calculator</h1>
+      <p>
+        Escolha para onde deseja ir. Acesse a calculadora principal para testar
+        interações elementais ou abra a API para integrar o sistema com bots e ferramentas.
+      </p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <div class="icon">🔮</div>
+        <h2>Main Calculator</h2>
+        <p>
+          Interface principal da calculadora elemental. Ideal para consultas rápidas
+          durante sessões de RPG, com foco em ataque, defesa, imunidades e hierarquia elemental.
+        </p>
+        <div class="tags">
+          <span class="tag">Ataque</span>
+          <span class="tag">Defesa</span>
+          <span class="tag">Hierarquia</span>
+          <span class="tag">Habilidades</span>
+        </div>
+        <a class="btn btn-main" href="./main/">Calculadora</a>
+      </article>
+
+      <article class="card">
+        <div class="icon">📡</div>
+        <h2>Public API</h2>
+        <p>
+          Endpoint para retorno em JSON, permitindo integrações com bots, sites,
+          apps e outros sistemas que precisem calcular relações elementais automaticamente.
+        </p>
+        <div class="tags">
+          <span class="tag">JSON</span>
+          <span class="tag">Integração</span>
+          <span class="tag">Bots</span>
+          <span class="tag">Request</span>
+        </div>
+        <a class="btn btn-api" href="./api/">API</a>
+      </article>
+    </section>
+
+    <div class="footer">
+      Feito para o universo de <strong>The Relic Journey Project</strong>.
+    </div>
+  </main>
+</body>
+</html>
