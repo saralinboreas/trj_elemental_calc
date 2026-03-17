@@ -1,4 +1,4 @@
-import { calculateElementsOrganized } from './api.js';
+import { calculateElementsOrganized, calculateElementsSimple } from './api.js';
 import { ELEMENTS } from '../../logic/elements.js';
 import { ABILITIES } from '../../logic/abilities.js';
 
@@ -32,6 +32,11 @@ function stringifyCsv(values) {
   return values.join(',');
 }
 
+function isSimpleMode() {
+  const params = new URLSearchParams(location.search);
+  return params.get('simple') === '1';
+}
+
 function buildQueryUrl() {
   const params = new URLSearchParams();
 
@@ -42,6 +47,7 @@ function buildQueryUrl() {
 
   if (elements.length) params.set('elements', stringifyCsv(elements));
   if (abilities.length) params.set('abilities', stringifyCsv(abilities));
+  if (isSimpleMode()) params.set('simple', '1');
 
   return `${location.origin}${location.pathname}?${params.toString()}`;
 }
@@ -69,16 +75,25 @@ function updateJson() {
     const elements = parseCsv(elementsInput.value);
     const abilities = parseCsv(abilitiesInput.value);
 
-    const payload = calculateElementsOrganized({
-      mode,
-      elements,
-      abilities
-    });
+    const payload = isSimpleMode()
+      ? calculateElementsSimple({
+          mode,
+          elements,
+          abilities
+        })
+      : calculateElementsOrganized({
+          mode,
+          elements,
+          abilities
+        });
 
     const pretty = prettyInput.value !== 'no';
     jsonOutput.textContent = JSON.stringify(payload, null, pretty ? 2 : 0);
 
-    statusBox.textContent = '● JSON carregado';
+    statusBox.textContent = isSimpleMode()
+      ? '● JSON simples carregado'
+      : '● JSON carregado';
+
     statusBox.classList.remove('warn');
   } catch (error) {
     jsonOutput.textContent = JSON.stringify({
