@@ -2,10 +2,9 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>TRJ API Magra</title>
+  <title>TRJ Raw API</title>
 </head>
 <body>
-<pre id="json"></pre>
 
 <script type="module">
   import { calculateElementsSimple, calculateElementsOrganized } from './js/api.js';
@@ -26,11 +25,19 @@
 
   const simple = params.get('simple') === '1';
 
-  const result = simple
-    ? calculateElementsSimple({ mode, elements, abilities })
-    : calculateElementsOrganized({ mode, elements, abilities });
+  try {
+    const result = simple
+      ? calculateElementsSimple({ mode, elements, abilities })
+      : calculateElementsOrganized({ mode, elements, abilities });
+    document.body.textContent = JSON.stringify(result, null, 2);
 
-  document.body.textContent = JSON.stringify(result, null, 2);
+  } catch (err) {
+    document.body.textContent = JSON.stringify({
+      error: true,
+      message: err?.message || 'Erro desconhecido'
+    }, null, 2);
+  }
 </script>
+
 </body>
 </html>
