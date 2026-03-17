@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Relic Journey Project</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-wrap">
+      <div class="brand-icon"></div>
+      <div>
+        <h1>Calculadora Elemental</h1>
+        <p>The Relic Journey Project</p>
+      </div>
+    </div>
+     
+    <div class="menu">
+  <button class="menu-btn" type="button" aria-label="Menu">☰</button>
+
+  <div class="menu-dropdown" id="menuDropdown">
+    <!-- <a href="./index.html">Calculadora</a> -->
+    <a href="../api/api.html">API</a>
+  </div>
+</div>
+    
+  </header>
+
+  <!-- ================= EMBED / OPEN GRAPH ================= -->
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="The Relic Journey Project">
+  <meta property="og:description" content="Calculadora elemental do RPG.">
+  <meta property="og:url" content="https://saralinboreas.github.io/trj_elemental_calc/">
+
+  <meta property="og:image" content="https://cdn.discordapp.com/icons/1304557655825711169/a_13d15f274c0c20a4f0f4eddcecd04f9f.gif?size=2048">
+  <meta property="og:image:width" content="2048">
+  <meta property="og:image:height" content="2048">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Relic Journey Project">
+  <meta name="twitter:description" content="Calculadora elemental do RPG.">
+  <meta property="og:image" content="https://saralinboreas.github.io/trj_elemental_calc/main/embed_trj.gif">
+  <meta name="twitter:image" content="https://saralinboreas.github.io/trj_elemental_calc/main/embed_trj.gif">
+  
+  <!-- ================= FIM EMBED ================= -->
+
+  <main class="app-shell">
+    <section class="mode-strip panel-like">
+      <button class="mode-btn active" type="button" id="defenseModeBtn" aria-pressed="true">
+        <span class="mode-icon">🛡</span>
+        <span>Defesa</span>
+      </button>
+      <button class="mode-btn" type="button" id="attackModeBtn" aria-pressed="false">
+        <span class="mode-icon">⚔</span>
+        <span>Ataque</span>
+      </button>
+      <button class="mode-btn clear-mode" type="button" id="clearBtn">
+        <span class="mode-icon">✕</span>
+        <span>Limpar</span>
+      </button>
+    </section>
+
+    <section class="panel selector-panel">
+      <div class="panel-header compact-header sticky-subheader">
+        <div>
+          <h2 id="selectorTitle">Escolha até 3 elementos de defesa</h2>
+          <p class="panel-subtitle">Toque em 1, 2 ou 3 elementos para combinar.</p>
+        </div>
+      </div>
+      <div id="selectedBadges" class="selected-badges"></div>
+      <div id="elementGrid" class="element-grid"></div>
+    </section>
+
+    <section class="panel abilities-panel" id="abilitiesPanel">
+      <div class="panel-header compact-header sticky-subheader abilities-header">
+        <div>
+          <h2>Habilidades</h2>
+          <p class="panel-subtitle">Habilidades podem alterar as formas como os elementos interagem.</p>
+        </div>
+
+        <button
+          type="button"
+          id="toggleAbilitiesBtn"
+          class="toggle-abilities-btn"
+          aria-expanded="true">
+          Ocultar
+        </button>
+      </div>
+
+      <div id="abilitiesContent">
+        <div id="abilitySelectWrap"></div>
+
+        <div id="abilityInfoBox" class="ability-info-box">
+          <h4>Descrição da habilidade</h4>
+          <p id="abilityInfoText"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel results-panel">
+      <div class="panel-header compact-header sticky-subheader">
+        <div>
+          <h2 id="resultsTitle">Dano recebido por tipo atacante</h2>
+          <p class="panel-subtitle">Fraquezas, resistências, neutros e imunidades.</p>
+        </div>
+      </div>
+      <div id="resultsContainer" class="results-container"></div>
+    </section>
+  </main>
+
+  <script type="module" src="../api/js/api.js"></script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
