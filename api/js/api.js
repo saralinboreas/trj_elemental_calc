@@ -50,6 +50,12 @@ function formatEntry(row) {
   };
 }
 
+function formatSimpleEntry(row) {
+  return row.multiplier === 0
+    ? row.name
+    : `${row.name} ${row.multiplier}x`;
+}
+
 export function calculateElementsOrganized({
   mode = 'defense',
   elements = [],
@@ -122,6 +128,49 @@ export function calculateElementsOrganized({
     grouped,
     results: resultsObject,
 
+    lines,
+    text: lines.join('\n')
+  };
+}
+
+export function calculateElementsSimple({
+  mode = 'defense',
+  elements = [],
+  abilities = []
+} = {}) {
+  const payload = buildCalculationPayload(mode, elements, abilities);
+
+  const groupedMap = new Map();
+
+  for (const row of payload.results) {
+    const label = normalizeLabel(row.label);
+
+    if (!groupedMap.has(label)) {
+      groupedMap.set(label, []);
+    }
+
+    groupedMap.get(label).push(formatSimpleEntry(row));
+  }
+
+  const grouped = [...groupedMap.entries()]
+    .sort((a, b) => labelOrder(a[0]) - labelOrder(b[0]));
+
+  const selectedText = payload.selected.length
+    ? payload.selected.map((item) => item.name).join(', ')
+    : 'nenhum';
+
+  const abilitiesText = payload.abilities.length
+    ? payload.abilities.map((item) => item.name).join(', ')
+    : 'nenhuma';
+
+  const lines = [
+    `Modo: ${payload.mode}`,
+    `Elementos: ${selectedText}`,
+    `Habilidades: ${abilitiesText}`,
+    ...grouped.map(([label, values]) => `${label}: ${values.join(', ')}`)
+  ];
+
+  return {
     lines,
     text: lines.join('\n')
   };
